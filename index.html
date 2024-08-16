@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>ThreadsAndButtons</title>
+	<style type="text/css">
+		* {
+			font-family: sans-serif;
+			color: white;
+		}
+		body, html {
+			background-color: #303030;
+		}
+		.title-card {
+/*			display: inline;*/
+			text-align: center;
+		}
+		.container {
+			height: 250px;
+			width: 100%;
+			margin: 0px;
+			padding: 0px;
+			border: 1px solid gray;
+			overflow: auto;
+			text-align: center;
+		}
+		.highlight-container {
+			height: 126px;
+			width: 100%;
+			margin: 0px;
+			padding: 0px;
+			border: 1px solid gray;
+			overflow: auto;
+		}
+		.highlight-card {
+			height: 125px;
+			width: calc(50% - 2px);
+			border: 1px dotted gray;
+			float: left;
+			margin: 0px;
+			padding: 0px;
+			text-align: center;
+		}
+		.card-text {
+			padding: 2px;
+			margin: 3px;
+		}
+		td {
+			width: 96px;
+			font-size: 90%;
+		}
+		.transparent-button {
+			background-color: transparent;
+			border: 0px;
+			padding: 3px;
+		}
+
+		.dropdown-input, input {
+			background-color: rgba(0, 0, 0, 0.5);
+			border: 1px solid gray;
+			border-radius: 7px;
+			width: 200px;
+			padding: 5px;
+		}
+		.main-button {
+			font-size: 110%;
+			width: calc(100% - 20px);
+			padding: 5px;
+			margin: 5px;
+			border-radius: 7px;
+			border: 1px solid gray;
+			background-image: linear-gradient(to right, #303030, #505050);
+		}
+		.main-button:active {
+			color: black;
+			background-image: linear-gradient(to right, #FFFFFF, #999999);
+		}
+	</style>
+</head>
+<body onload="renderPage()">
+	<div class="title-card">
+		<h3>Threads And Buttons</h3>
+	</div>
+	<div class="highlight-container">
+		<div class="highlight-card">
+			<h3>Orders</h3>
+			<h1 id="orderscard">0</h1>
+		</div>
+		<div class="highlight-card">
+			<h3>Total</h3>
+			<h1 id="amountcard">0</h1>
+		</div>
+	</div>
+	<div class="container">
+		<table id="entrytable" style="border: ipx solid gray;">
+			
+			<tr>
+				<td><h4>Category</h4></td>
+				<td><h4>Buyer</h4></td>
+				<td><h4>Qty</h4></td>
+				<td><h4>Amt</h4></td>
+				<td><h4></h4></td>
+			</tr>
+<!-- 
+			<tr>
+				<td><button onclick="alert('Category: Thread\nProduct: ProductName\nBuyer: BuyerName\nQuantity: 2\nAmount: 40\nProfit: 10')" class="transparent-button">Thread</button></td>
+				<td>2</td>
+				<td>40</td>
+			</tr>
+ -->
+		</table>
+	</div>
+	<div class="container" style="height: 275px;">
+		<table>
+			<tr>
+				<td>Category</td>
+				<td><select id="categoryselect" class="card-text dropdown-input">
+					<!-- <option class="card-text" value=""></option> -->
+					<option class="card-text" value="Thread">Thread</option>
+					<option class="card-text" value="Button">Button</option>
+				</select></td>
+			</tr>
+		
+			<tr>
+				<td>Product</td>
+				<td><select id="productselect" class="card-text dropdown-input">
+					<!-- <option class="card-text" value=""></option> -->
+					<option class="card-text" value="Name-Of-The-Product-1">Name-Of-The-Product-1</option>
+					<option class="card-text" value="Name-Of-The-Product-2">Name-Of-The-Product-2</option>
+					<option class="card-text" value="Name-Of-The-Product-3">Name-Of-The-Product-3</option>
+				</select></td>
+			</tr>
+		
+			<tr>
+				<td>Buyer</td>
+				<td><input id="buyerinput" type="text" style="width: 190px;" value="Buyer Name"/></td>
+			</tr>
+		
+			<tr>
+				<td>Quantity</td>
+				<td><input id="quantityinput" type="number" style="width: 190px;" value="1"/></td>
+			</tr>
+		
+			<tr>
+				<td>Amount</td>
+				<td><input id="amountinput" type="number" style="width: 190px; margin-top: 3px;" value="10"/></td>
+			</tr>
+		</table>
+		<button class="main-button" onclick="myMakeEntry();">Make Entry</button>
+		<button class="main-button" onclick="myEODReport()">Generate EOD Report</button>
+		<textarea id="txtpool" style="display: none;"></textarea>
+		<script type="text/javascript">
+			function renderPage() {
+				var lastData = localStorage.getItem("data");
+				if (lastData == '' || lastData == undefined) {return}
+				txtpool.value = lastData.trim();
+				updateEntryTableFromTxtPool();
+				updateOrdersCard();
+				updateAmountCard();
+			}
+			function deleteTxtPool(argument) {
+				var resultText = "";
+				for (dtplno = 0; dtplno<txtpool.value.trim().split('\n').length; dtplno++) {
+					if (dtplno != argument) {
+						var resultText = resultText + '\n' + txtpool.value.trim().split('\n')[dtplno];
+					}
+				}
+				var resultText = resultText.trim();
+				txtpool.value = resultText;
+				localStorage.setItem("data", txtpool.value.trim());
+			}
+
+			function updateTxtPool() {
+				// alert(argument);
+				var currentValues = categoryselect.value + ',' + productselect.value + ',' + buyerinput.value + ',' + quantityinput.value + ',' + amountinput.value;
+				txtpool.value = txtpool.value.trim() + '\n' + currentValues;
+				localStorage.setItem("data", txtpool.value.trim());
+			}
+			function updateEntryTableFromTxtPool() {
+				if (txtpool.value.trim().trim() == '') {
+					var resultTxt = '';
+					var resultTxt = '<tr><td><h4>Category</h4></td><td><h4>Buyer</h4></td><td><h4>Qty</h4></td><td><h4>Amt</h4></td><td><h4></h4></td></tr>' + resultTxt;
+					entrytable.innerHTML = resultTxt;
+					updateOrdersCard();
+					updateAmountCard();
+					// localStorage.setItem("data", txtpool.value.trim());
+					return;
+				}
+				var txtPoolArray = txtpool.value.trim().split('\n');
+				var resultTxt = '';
+				for (var i = 0; i<txtPoolArray.length; i++) {
+					var currentTxtPoolLine = txtPoolArray[i];
+					var txtPoolElements = currentTxtPoolLine.split(',');
+					var resultTxt = resultTxt + '<tr>' + '<td>' + '<button onclick="alert(\'Category: ' + txtPoolElements[0] + '\\nProduct: ' + txtPoolElements[1] + '\\nBuyer: ' + txtPoolElements[2] + '\\nQuantity: ' + txtPoolElements[3] + '\\nAmount: ' + txtPoolElements[4] + '\')" class="transparent-button">' + txtPoolElements[0] + '</td>' + '<td>' + txtPoolElements[2] + '</td>' + '<td>' + txtPoolElements[3] + '</td>' + '<td>' + txtPoolElements[4] + '</td>' + '<td>' + '<button onclick="deleteTxtPool(' + i + '); updateEntryTableFromTxtPool();" class="transparent-button">❌</button>' + '</td>' + '</tr>'
+				}
+				var resultTxt = '<tr><td><h4>Category</h4></td><td><h4>Buyer</h4></td><td><h4>Qty</h4></td><td><h4>Amt</h4></td><td><h4></h4></td></tr>' + resultTxt;
+				entrytable.innerHTML = resultTxt;
+				updateOrdersCard();
+				updateAmountCard();
+				// localStorage.setItem("data", txtpool.value.trim());
+			}
+			function updateEntryTable() {
+				var lineNumber = txtpool.value.trim().split('\n').length - 1;
+				entrytable.innerHTML = entrytable.innerHTML + '<tr>' + '<td>' + '<button onclick="alert(\'Category: ' + categoryselect.value + '\\nProduct: ' + productselect.value + '\\nBuyer: ' + buyerinput.value + '\\nQuantity: ' + quantityinput.value + '\\nAmount: ' + amountinput.value + '\')" class="transparent-button">' + categoryselect.value + '</td>' + '<td>' + buyerinput.value + '</td>' + '<td>' + quantityinput.value + '</td>' + '<td>' + amountinput.value + '</td>' + '<td>' + '<button onclick="deleteTxtPool(' + lineNumber + '); updateEntryTableFromTxtPool();" class="transparent-button">❌</button>' + '</td>' + '</tr>'
+			}
+			function entryValidation(arg) {
+				if (arg[0].trim() == '') {
+					alert('ERROR: ' + arg[1] + ' Cannot Be Empty!');
+					return true
+				}
+				return false
+			}
+			function updateOrdersCard() {
+				console.log("txtpool.value.trim() => '" +txtpool.value.trim()+ "'")
+				if (txtpool.value.trim() == "") {
+					console.log('TxtPool Null Found...');
+					orderscard.innerHTML = "0";
+				} else {
+					orderscard.innerHTML = txtpool.value.trim().split("\n").length;
+				}
+			}
+			function updateAmountCard() {
+				if (txtpool.value.trim() == '') {
+					amountcard.innerHTML = '0';
+					return;
+				}
+				var txtPoolArray = txtpool.value.trim().trim().split('\n');
+				var totalAmount = 0;
+				for (tplno = 0; tplno<txtPoolArray.length; tplno++) {
+					var totalAmount = totalAmount + Number(txtpool.value.trim().split('\n')[tplno].split(',')[4]);
+				}
+				amountcard.innerHTML = totalAmount;
+			}
+			function myMakeEntry() {
+				var validationArray = [
+					[categoryselect.value, 'Category'],
+					[productselect.value, 'Product'],
+					[buyerinput.value, 'Buyer'],
+					[quantityinput.value, 'Quantity'],
+					[amountinput.value, 'Amount']
+				];
+				for (vno=0; vno<validationArray.length; vno++) {
+					var validationValue = validationArray[vno][0];
+					var validationString = validationArray[vno][1];
+					if (entryValidation([validationValue, validationString])) {
+						return;
+					}
+
+				}
+				updateTxtPool();
+				updateEntryTable();
+				updateOrdersCard();
+				updateAmountCard();
+			}
+			function myEODReport() {
+				var dt = new Date();
+				var currentDate = dt.getDay() + '-' + dt.getMonth() + '-' + dt.getFullYear();
+				var reportContent = 'Category,Product,Buyer,Quantity,Amount\n' + txtpool.value.trim() + '\n' + ',,,Total,' + amountcard.innerHTML;
+				var a = document.createElement('a');
+				a.href = `data:text/plain,${reportContent}`;
+				a.download = 'Business-EOD-Report_'+currentDate+'.csv';
+				document.body.appendChild(a);
+				a.click();
+			}
+		</script>
+	</div>
+</body>
+</html>
