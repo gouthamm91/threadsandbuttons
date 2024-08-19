@@ -76,9 +76,41 @@
 			color: black;
 			background-image: linear-gradient(to right, #FFFFFF, #999999);
 		}
+		.main-menu {
+			position: absolute;
+			left: 0px;
+			top: 0px;
+			display: none;
+		}
+		.menu-button {
+			position: absolute;
+			left: 0px;
+			top: 0px;
+			font-size: 110%;
+			padding: 5px;
+			margin: 5px;
+			border-radius: 7px;
+			border: 1px solid gray;
+			background-image: linear-gradient(to right, #303030, #505050);
+		}
+		.menu-button:active {
+			color: black;
+			background-image: linear-gradient(to right, #FFFFFF, #999999);
+		}
 	</style>
 </head>
 <body onload="renderPage()">
+		<button class="menu-button" onclick="menudiv.style.display = 'block';">&#8801;</button>
+		<div id="menudiv" class="main-menu">
+			<button class="main-button" onclick="myEODReport()">Generate EOD Report</button>
+			<div id="buyerbilldiv">
+				<!-- <button class="main-button">Copy Bill For Shop 1</button>
+				<button class="main-button">Copy Bill For Shop 2</button>
+				<button class="main-button">Copy Bill For Shop 3</button> -->
+			</div>
+			<button class="main-button" style="color: red;" onclick="menudiv.style.display = 'none';">Close</button>
+		</div>
+
 	<div class="title-card">
 		<h3>Threads And Buttons</h3>
 	</div>
@@ -636,7 +668,6 @@
 			</tr>
 		</table>
 		<button class="main-button" onclick="myMakeEntry();">Make Entry</button>
-		<button class="main-button" onclick="myEODReport()">Generate EOD Report</button>
 		<textarea id="txtpool" style="display: none;"></textarea>
 		<script type="text/javascript">
 			function renderPage() {
@@ -646,6 +677,7 @@
 				updateEntryTableFromTxtPool();
 				updateOrdersCard();
 				updateAmountCard();
+				updateBuyerBillDiv();
 			}
 			function deleteTxtPool(argument) {
 				var resultText = "";
@@ -672,6 +704,7 @@
 					entrytable.innerHTML = resultTxt;
 					updateOrdersCard();
 					updateAmountCard();
+					updateBuyerBillDiv();
 					// localStorage.setItem("data", txtpool.value.trim());
 					return;
 				}
@@ -686,6 +719,7 @@
 				entrytable.innerHTML = resultTxt;
 				updateOrdersCard();
 				updateAmountCard();
+				updateBuyerBillDiv();
 				// localStorage.setItem("data", txtpool.value.trim());
 			}
 			function updateEntryTable() {
@@ -720,6 +754,42 @@
 				}
 				amountcard.innerHTML = totalAmount;
 			}
+			function updateBuyerBillDiv() {
+				if (txtpool.value.trim() == '') {buyerbilldiv.innerHTML = ''; return;}
+				// Unique Buyer Values
+				var uniqueBuyers = '\n';
+				for (var bbcnt=0; bbcnt<txtpool.value.trim().split('\n').length; bbcnt++) {
+					if (uniqueBuyers.indexOf('\n' + txtpool.value.trim().split('\n')[bbcnt].split(',')[2] + '\n') <= -1) {
+						var uniqueBuyers = uniqueBuyers + txtpool.value.trim().split('\n')[bbcnt].split(',')[2] + '\n';
+					}
+				}
+				var uniqueBuyersArray = uniqueBuyers.trim().split('\n');
+
+				var outputString = '';
+				for (var ubcnt=0; ubcnt<uniqueBuyersArray.length; ubcnt++) {
+					var currentBuyer = uniqueBuyersArray[ubcnt];
+					var currentBuyerLines = '';
+					for (var lcbcnt = 0; lcbcnt<txtpool.value.trim().split('\n').length; lcbcnt++) {
+						var currentLine = txtpool.value.trim().split('\n')[lcbcnt];
+						if (currentLine.indexOf(',' + currentBuyer + ',') > -1) {
+							var currentBuyerLines = currentBuyerLines + '\n' + currentLine;
+						}
+					}
+					var currentBuyerLines = currentBuyerLines.trim();
+
+					var totalAmount = 0
+					var billLines = '';
+					for (var cblcnt=0; cblcnt<currentBuyerLines.split('\n').length; cblcnt++) {
+						var currentLine = currentBuyerLines.split('\n')[cblcnt];
+						var billLines = billLines + '\n' + currentLine.split(',')[0] + ' ' + currentLine.split(',')[1] + ' = ' + currentLine.split(',')[4];
+						var totalAmount = totalAmount + Number(currentLine.split(',')[4]);
+					}
+					var billLines = billLines + '\n' + '================' + '\n' + 'Total = ' + totalAmount + '\n' + '================';
+
+					var outputString = outputString + '<button class="main-button" onclick="navigator.clipboard.writeText(\'' + billLines.replace(/\n/g, '\\n') + '\'); console.log(\'' + billLines.replace(/\n/g, '\\n') + '\');"> Copy ' + currentBuyer + ' Bill</button>'; 
+				}
+				buyerbilldiv.innerHTML = outputString;
+			}
 			function myMakeEntry() {
 				var validationArray = [
 					[categoryselect.value, 'Category'],
@@ -740,14 +810,19 @@
 				updateEntryTable();
 				updateOrdersCard();
 				updateAmountCard();
+				updateBuyerBillDiv();
 			}
 			function myEODReport() {
 				var dt = new Date();
-				var currentDate = dt.getDay() + '-' + dt.getMonth() + '-' + dt.getFullYear();
-				var reportContent = 'Category,Product,Buyer,Quantity,Amount\n' + txtpool.value.trim() + '\n' + ',,,Total,' + amountcard.innerHTML;
+				if (dt.getMonth()<10) {var currMonth = '0' + dt.getMonth();}
+				if (dt.getDay()<10) {var currDay = '0' + dt.getDay();}
+
+				var currentDate = currDay + '-' + currMonth + '-' + dt.getFullYear();
+				var t24Date = dt.getFullYear() + '' + currDay + '' + currMonth;
+				var reportContent = 'Category,Product,Buyer,Quantity,Amount\n' + txtpool.value.trim() + '\n,,,,\n' + ',,,Total,' + amountcard.innerHTML;
 				var a = document.createElement('a');
 				a.href = `data:text/plain,${reportContent}`;
-				a.download = 'Business-EOD-Report_'+currentDate+'.csv';
+				a.download = 'Business-EOD-Report-'+t24Date+'_'+currentDate+'.csv';
 				document.body.appendChild(a);
 				a.click();
 
