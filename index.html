@@ -814,10 +814,10 @@
 			}
 			function myEODReport() {
 				var dt = new Date();
-				var currMonth = dt.getMonth();
+				var currMonth = dt.getMonth() + 1;
 				var currDay = dt.getDate();
-				if (dt.getMonth()<10) {var currMonth = '0' + dt.getMonth();}
-				if (dt.getDate()<10) {var currDay = '0' + dt.getDate();}
+				if (currMonth<10) {var currMonth = '0' + dt.getMonth();}
+				if (currDay<10) {var currDay = '0' + dt.getDate();}
 
 				var currentDate = currDay + '-' + currMonth + '-' + dt.getFullYear();
 				var t24Date = dt.getFullYear() + '' + currMonth + '' + currDay;
