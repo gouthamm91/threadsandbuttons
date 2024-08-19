@@ -784,7 +784,7 @@
 						var billLines = billLines + '\n' + currentLine.split(',')[0] + ' ' + currentLine.split(',')[1] + ' = ' + currentLine.split(',')[4];
 						var totalAmount = totalAmount + Number(currentLine.split(',')[4]);
 					}
-					var billLines = billLines + '\n' + '================' + '\n' + 'Total = ' + totalAmount + '\n' + '================';
+					var billLines = billLines + '\n' + '================' + '\n' + 'Total = ' + totalAmount + ' Rs\n' + '================';
 
 					var outputString = outputString + '<button class="main-button" onclick="navigator.clipboard.writeText(\'' + billLines.replace(/\n/g, '\\n') + '\'); console.log(\'' + billLines.replace(/\n/g, '\\n') + '\');"> Copy ' + currentBuyer + ' Bill</button>'; 
 				}
